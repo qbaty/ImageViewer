@@ -1,0 +1,50 @@
+
+<!doctype html>
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+<meta name="author" content="qbatyqi">
+<meta name="format-detection" content="telephone=no">
+<meta name="x5-fullscreen" content="true">
+<meta name="apple-touch-fullscreen" content="YES">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="stylesheet" href="http://3gimg.qq.com/wap30/info/photo/20130530/css/image.min.css">
+<title>ImageViewer</title>
+<style type="text/css">
+  body{
+		width:100%;
+		height:100%;
+		overflow-y:auto;
+		-webkit-overflow-scrolling:touch;
+	}
+	#main{
+		background: #000;
+	}
+	.row {
+		padding-left:3px;
+		clear:both;
+		overflow:hidden;
+	}
+	#main img.render{
+		float: left;
+		margin-right: 4px;
+		margin-top: 4px;
+	}
+	html::-webkit-scrollbar {
+		width: 0px;
+		height: 0px;
+	}
+</style>
+</head>
+<body>
+
+<div id="main" class="main"></div>
+<script src="http://3gimg.qq.com/wap30/js/info/jq.mobi.120913am.min.js"></script>
+<script type="text/javascript" src="ImageView.js"></script>
+<script type="text/javascript">
+var data = [{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995424_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995455_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995484_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995504_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995552_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995570_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995599_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995663_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995707_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995740_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995758_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995795_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995803_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995814_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995829_400_640.jpg"},{"url":"http://infopic.gtimg.com/qq_news/auto/pics/83/83995/83995853_400_640.jpg"}];
+
+imageViewer($('#main'), data.images);
+</script>
+</body>
+</html>

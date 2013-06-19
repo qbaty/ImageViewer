@@ -39,6 +39,7 @@ var imageViewer = (function(){
 
 	//返回一行已经调整好大小的图片
 	var resizeByRow = function(){
+		if(point == readyQueue.length) return;
 		var getSumRate = function(arr){
 			var res = 0;
 			for(var i = 0; i < arr.length; i++){
@@ -54,7 +55,7 @@ var imageViewer = (function(){
 				point ++
 				res = getSumRate(rowArr);
 			}else{
-				return ;
+				break;
 			}
 		}
 
@@ -115,26 +116,15 @@ var imageViewer = (function(){
 	};
 
 	var zoom = false;
+	var zoomDuration = '200ms';
 	var zoomAni = function(){
-		if(zoom){
-			wrap.css({'-webkit-transform' : 'scale(1) translateZ(0)'});
-			setTimeout(function(){
-				wrap.css({'-webkit-transform-origin':'0 0'});
-				setTimeout(function(){
-					wrap.css({'-webkit-transform':'none'});	
-				},200);
-				wrap[0].getBoundingClientRect();
-			},200);
-			zoom = false;
-			return ;
-		}
-		
+
 		var target = $(this)[0];
 		var innerWidth = window.innerWidth;
 		var innerHeight = window.innerHeight;
 		var pix = innerWidth/innerHeight;
 		var sy = window.scrollY;
-		var scale;
+		var scale, state = {};
 		var nX, nY;
 
 		console.log('target.x:' + target.x);
@@ -142,9 +132,14 @@ var imageViewer = (function(){
 
 		if(target.width/target.height > pix){
 			scale = innerWidth/(target.offsetWidth);
+			state['base'] = 'width';
 		}else{
 			scale = innerHeight/(target.offsetHeight);
+			state['base'] = 'height';
 		}
+
+		state['width'] = target.width * scale;
+		state['height'] = target.height * scale;
 
 		//以宽度放大为标准，对齐高度
 		var scaleHeight = target.offsetHeight * scale;
@@ -168,13 +163,70 @@ var imageViewer = (function(){
 		var originX = (target.x*scale - offsetX)/(scale-1);
 		var originY = ((target.y*scale) - window.scrollY - offsetY)/(scale-1);
 
-		parent.css({'-webkit-transform-origin' : originX+'px ' + originY + 'px', '-webkit-transition':'none'});
+		parent.css({'-webkit-transform-origin' : originX+'px ' + originY + 'px',
+			'-webkit-transition':'none'});
 
 		wrap[0].getBoundingClientRect();
 
-		parent.css({'-webkit-transform': 'scale('+ scale +') translateZ(0)','-webkit-transition':' all 200ms ease-out'});
+		parent.css({'-webkit-transform': 'scale('+ scale +') translateZ(0)',
+			'-webkit-transition':' all '+ zoomDuration +' ease-in'});
 
+		parent.bind('webkitTransitionEnd', function(){
+			parent.unbind('webkitTransitionEnd');
+			coverBackground(target, scale, state);
+		})
+		
 		zoom = true;
+	};
+
+	var backLayer;
+	var coverBackground = function(dom, s, state){
+		backLayer = $('<div style="position:absolute; opacity:0; -webkit-transition:opacity 100ms linear; z-index:99;background:#000;height:'+ innerHeight +'px;width:'+ innerWidth +'px"></div>');
+		var target = dom.cloneNode();
+		var top = 0,left = 0;
+		if(state['base'] == 'height'){
+			target.height = window.innerHeight;
+			target.width = state['width'];
+			top = window.scrollY;
+			left = (window.innerWidth - state['width']) / 2;
+		}else if(state['base'] == 'width'){
+			target.width = window.innerWidth;
+			target.height = state['height'];
+			top = window.scrollY + ((window.innerHeight - state['height']) / 2);
+		}
+
+		target.className = 'cloneNode';
+		backLayer.css({'top': window.scrollY + 'px', 'left' : '0px'});
+		$(target).css({'position':'absolute', 'z-index':'100', 'top': top + 'px', 'left' : left + 'px'});
+
+		$('body').append(backLayer);
+		$('body').append(target);
+
+		backLayer[0].getBoundingClientRect();
+		backLayer.css('opacity', 1);
+
+		$(target).bind('touchstart', function(e){ e.preventDefault(); e.stopImmediatePropagation();uncover(); });
+		backLayer.bind('touchstart', function(e){ e.preventDefault(); e.stopImmediatePropagation();uncover(); });
+	};
+
+	var uncover = function(){
+		backLayer.bind('webkitTransitionEnd', function(){
+			backLayer.unbind('webkitTransitionEnd');
+			$('.cloneNode').remove();
+			wrap.css({'-webkit-transform' : 'scale(1) translateZ(0)'});
+			setTimeout(function(){
+				wrap.css({'-webkit-transform-origin':'0 0'});
+				setTimeout(function(){
+					wrap.css({'-webkit-transform':'none'});	
+				},200);
+				wrap[0].getBoundingClientRect();
+			},200);
+			setTimeout(function(){
+				backLayer.remove();
+			},100);
+		});
+		backLayer.css('-webkit-transition-duration','150ms');
+		backLayer.css('opacity', 0);
 	};
 
 	var initFunctional = function(){

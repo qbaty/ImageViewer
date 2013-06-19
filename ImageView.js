@@ -213,6 +213,7 @@ var imageViewer = (function(){
 		backLayer.bind('webkitTransitionEnd', function(){
 			backLayer.unbind('webkitTransitionEnd');
 			$('.cloneNode').remove();
+			backLayer.remove();
 			wrap.css({'-webkit-transform' : 'scale(1) translateZ(0)'});
 			setTimeout(function(){
 				wrap.css({'-webkit-transform-origin':'0 0'});
@@ -221,9 +222,6 @@ var imageViewer = (function(){
 				},200);
 				wrap[0].getBoundingClientRect();
 			},200);
-			setTimeout(function(){
-				backLayer.remove();
-			},100);
 		});
 		backLayer.css('-webkit-transition-duration','150ms');
 		backLayer.css('opacity', 0);

@@ -1,6 +1,6 @@
 var imageViewer = (function(){
 
-	var imgSource, wrap;
+	var imgSource, wrap, sync;
 
 	//计算图片指针
 	var point = 0;
@@ -19,15 +19,20 @@ var imageViewer = (function(){
 		var wholeWidth = clientObj['width'] - gap;
 		var divisor = arr[0]['height']/arr[0]['width'];
 		var multiple = 1;
+		var h;
 
 		if(arr.length > 1){
 			for(var i = 1; i < arr.length; i++){
 				temp = arr[i];
 				multiple += (divisor/(temp['height']/temp['width']));
+				h = (wholeWidth / multiple) * divisor;
 			}
+		}else if(point > imgSource.length - 1){
+			h = window.innerHeight / 3;
+		}else{
+			return
 		}
-		
-		var h = (wholeWidth / multiple) * divisor;
+
 		var html = '<div class="row">';
 		for(var j = 0; j < arr.length; j++){
 			html += '<img class="render" height="'+ h +'" src="'+ arr[j]['url'] +'"/>';
@@ -79,21 +84,33 @@ var imageViewer = (function(){
 			$('body').append(hiddenDiv);
 		}
 
+		var l = data.length;
+		var imgloadHandler = function(i, img){
+			hiddenDiv.append(img);
+ 			data[i]['height'] = img.clientHeight;
+ 			data[i]['width'] = img.clientWidth;
+			readyQueue.push(data[i]);
+			resizeQueue();
+		};
 		var loadImg = function(i, data){
 			var img = new Image();
-			img.onload = function(){
-				hiddenDiv.append(img);
-	 			data[i]['height'] = img.clientHeight;
-	 			data[i]['width'] = img.clientWidth;
-				readyQueue.push(data[i]);
-	 			resizeQueue();
-			};
+			
+			if(sync){
+				img.onload = function(){
+					imgloadHandler(i, img);
+					if(i < (l-1)) loadImg(++i, data);
+				};
+			}else{
+				if(i < l-1) loadImg(++i, data);
+				img.onload = function(){
+					imgloadHandler(i, img);
+				};
+			}
+			
 			img.src = data[i]['url'];
-		}
+		};
 
-		for(var i = 0; i < data.length; i++){
-			loadImg(i, data);
-		}
+		loadImg(0, data);
 	};
 
 	var orientationchange = function(obj){
@@ -108,7 +125,7 @@ var imageViewer = (function(){
 		orientationTimer = setInterval(function(){
 			window.scrollTo(0, 0);
 			if(point != readyQueue.length){
-				compute();
+				initImageRender();
 			}else{
 				clearInterval(orientationTimer);
 			}
@@ -144,7 +161,7 @@ var imageViewer = (function(){
 		//以宽度放大为标准，对齐高度
 		var scaleHeight = target.offsetHeight * scale;
 		var offsetY = (innerHeight - scaleHeight)/2;
-		
+
 		//以高度放大为标准，对齐宽度
 		var scaleWidth = target.offsetWidth * scale;
 		var offsetX = (innerWidth - scaleWidth)/2;
@@ -175,7 +192,7 @@ var imageViewer = (function(){
 			parent.unbind('webkitTransitionEnd');
 			coverBackground(target, scale, state);
 		})
-		
+
 		zoom = true;
 	};
 
@@ -233,9 +250,10 @@ var imageViewer = (function(){
 		wrap.delegate('img', 'click', zoomAni);
 	};
 
-	return function(dom, imgArr){
+	return function(dom, imgArr, isSync){
 		imgSource = imgArr;
 		wrap = dom;
+		sync = isSync;
 		initFunctional();
 	};
 })();
